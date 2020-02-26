@@ -20,7 +20,7 @@ namespace HolidayOptimizer.Api.Contracts
         {
             _supportedCountryCodes = configuration.GetSection("SupportedCountryCodes").Get<string[]>();
 
-            RuleFor(x => x.Country).Must(x => _supportedCountryCodes.Contains(x))
+            RuleFor(x => x.Country).Must(x => _supportedCountryCodes.Contains(x.ToUpper()))
                 .WithErrorCode("900")
                 .WithMessage("Country not supported.");
         }        

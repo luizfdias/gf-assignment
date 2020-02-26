@@ -18,7 +18,7 @@ namespace HolidayOptimizer.Api.Controllers
             _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
         }
 
-        [HttpGet("{year}/{country}")]
+        [HttpGet("{Year}/{Country}")]
         public async Task<IActionResult> GetHolidaysPerYearAndCountry([FromRoute]HolidaysPerYearAndCountryRequest request)
         {
             var holidaysResult = await _holidayService.GetHolidaysPerYearAndCountry(request);
