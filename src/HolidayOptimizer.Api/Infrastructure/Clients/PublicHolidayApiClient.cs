@@ -10,28 +10,28 @@ namespace HolidayOptimizer.Api.Infrastructure.Clients
 {
     public class PublicHolidayApiClient : IPublicHolidayClient
     {
-        private readonly string _publicHolidayBaseApi;
+        private readonly string _publicHolidayApiBaseUrl;
         private readonly HttpClient _httpClient;
         private readonly ISerialization _serializer;
 
         public PublicHolidayApiClient(
-            string publicHolidayBaseApi,
+            string publicHolidayApiBaseUrl,
             HttpClient httpClient,
             ISerialization serializer)
         {
-            if (string.IsNullOrWhiteSpace(publicHolidayBaseApi))
+            if (string.IsNullOrWhiteSpace(publicHolidayApiBaseUrl))
             {
-                throw new ArgumentNullException(nameof(publicHolidayBaseApi));
+                throw new ArgumentNullException(nameof(publicHolidayApiBaseUrl));
             }
 
-            _publicHolidayBaseApi = publicHolidayBaseApi;
+            _publicHolidayApiBaseUrl = publicHolidayApiBaseUrl;
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         }
 
         public async Task<IEnumerable<Holiday>> GetHolidays(int year, string country)
         {
-            var httpMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_publicHolidayBaseApi), $"{year}/{country}"));
+            var httpMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_publicHolidayApiBaseUrl), $"{year}/{country}"));
 
             var result = await _httpClient.SendAsync(httpMessage);
 

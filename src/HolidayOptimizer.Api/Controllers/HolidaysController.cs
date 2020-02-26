@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using HolidayOptimizer.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -6,31 +7,35 @@ namespace HolidayOptimizer.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class HolidaysController : ControllerBase
+    public class HolidaysController : ApiBaseController
     {       
         private readonly ILogger<HolidaysController> _logger;
+        private readonly IHolidayService _holidayService;
 
-        public HolidaysController(ILogger<HolidaysController> logger)
+        public HolidaysController(
+            ILogger<HolidaysController> logger,
+            IHolidayService holidayService)
         {
             _logger = logger;
+            _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
         }
 
         [HttpGet("CountryMostHolidays")]
-        public IEnumerable<WeatherForecast> GetCountryWithMostHolidaysThisYear()
+        public IActionResult GetCountryWithMostHolidaysThisYear()
         {
-            
+            return Ok(_holidayService.GetCountryWithMostHolidaysThisYear());
         }
 
         [HttpGet("MonthMostHolidays")]
-        public IEnumerable<WeatherForecast> GetCountryWithMostHolidaysThisYear()
+        public IActionResult GetMonthMostHolidays()
         {
-
+            return Ok(_holidayService.GetMonthMostHolidaysThisYear());
         }
 
         [HttpGet("CountryMostUniqueHolidays")]
-        public IEnumerable<WeatherForecast> GetCountryWithMostHolidaysThisYear()
+        public IActionResult GetCountryMostUniqueHolidays()
         {
-
+            return Ok(_holidayService.GetCountryMostUniqueHolidaysThisYear());
         }
     }
 }
