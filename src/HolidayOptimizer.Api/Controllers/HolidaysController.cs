@@ -1,41 +1,47 @@
 ﻿using System;
+using System.Threading.Tasks;
+using HolidayOptimizer.Api.Contracts;
 using HolidayOptimizer.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace HolidayOptimizer.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
     public class HolidaysController : ApiBaseController
-    {       
-        private readonly ILogger<HolidaysController> _logger;
+    {               
         private readonly IHolidayService _holidayService;
 
         public HolidaysController(
-            ILogger<HolidaysController> logger,
             IHolidayService holidayService)
         {
-            _logger = logger;
             _holidayService = holidayService ?? throw new ArgumentNullException(nameof(holidayService));
         }
 
-        [HttpGet("CountryMostHolidays")]
-        public IActionResult GetCountryWithMostHolidaysThisYear()
+        [HttpGet("{year}/{country}")]
+        public async Task<IActionResult> GetHolidaysPerYearAndCountry([FromRoute]HolidaysPerYearAndCountryRequest request)
         {
-            return Ok(_holidayService.GetCountryWithMostHolidaysThisYear());
+            var holidaysResult = await _holidayService.GetHolidaysPerYearAndCountry(request);
+
+            return Ok(holidaysResult.Holidays);
+        }
+
+        [HttpGet("CountryMostHolidays")]        
+        public async Task<IActionResult> GetCountryWithMostHolidaysThisYear()
+        {
+            return Ok(await _holidayService.GetCountryWithMostHolidaysThisYear());
         }
 
         [HttpGet("MonthMostHolidays")]
-        public IActionResult GetMonthMostHolidays()
+        public async Task<IActionResult> GetMonthMostHolidays()
         {
-            return Ok(_holidayService.GetMonthMostHolidaysThisYear());
+            return Ok(await _holidayService.GetMonthWithMostHolidaysThisYear());
         }
 
         [HttpGet("CountryMostUniqueHolidays")]
-        public IActionResult GetCountryMostUniqueHolidays()
+        public async Task<IActionResult> GetCountryMostUniqueHolidays()
         {
-            return Ok(_holidayService.GetCountryMostUniqueHolidaysThisYear());
+            return Ok(await _holidayService.GetCountryWithMostUniqueHolidaysThisYear());
         }
     }
 }

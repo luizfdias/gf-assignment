@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+﻿using HolidayOptimizer.Api.Contracts;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HolidayOptimizer.Api.Controllers
 {
     public class ApiBaseController : ControllerBase
-    {
-        public override OkObjectResult Ok([ActionResultObjectValue] object value)
+    {        
+        public OkObjectResult Ok<TData>(TData value)
         {
-            return base.Ok(new { data = value });
+            return base.Ok(new ApiResponse<TData> { Data = value });
         }
     }
 }

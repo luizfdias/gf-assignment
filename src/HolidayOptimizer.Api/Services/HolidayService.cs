@@ -1,39 +1,67 @@
 ﻿using HolidayOptimizer.Api.Contracts;
 using HolidayOptimizer.Api.Domain;
-using HolidayOptimizer.Api.Domain.Enums;
 using HolidayOptimizer.Api.Services.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HolidayOptimizer.Api.Services
 {
     public class HolidayService : IHolidayService
     {
-        private readonly IMemoryCache _cache;
+        private readonly ICacheService _cache;
+        private readonly IPublicHolidayClient _holidayClient;
 
-        public HolidayService(IMemoryCache cache)
+        public HolidayService(
+            ICacheService cache,
+            IPublicHolidayClient holidayClient)
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _holidayClient = holidayClient ?? throw new ArgumentNullException(nameof(holidayClient));
         }
 
-        public CountryMostHolidaysResponse GetCountryWithMostHolidaysThisYear()
+        public async Task<HolidaysPerYearAndCountryResponse> GetHolidaysPerYearAndCountry(HolidaysPerYearAndCountryRequest request)
+        {
+            IEnumerable<Holiday> holidayResult;            
+
+            var allHolidays = _cache.Get<Holidays>($"holidays_{request.Year}");
+
+            if (allHolidays != null && allHolidays.Any())
+            {
+                holidayResult = allHolidays.GetHolidaysPerYearAndCountry(request.Year, request.Country);                
+            }
+            else
+            {
+                holidayResult = await _holidayClient.GetHolidays(request.Year, request.Country);
+            }            
+
+            return new HolidaysPerYearAndCountryResponse(
+                    holidayResult.Select(x => new HolidayResponse(x.Date, x.Name, x.CountryCode)));
+        }
+
+        public Task<CountryMostHolidaysResponse> GetCountryWithMostHolidaysThisYear()
         {
             var country = GetResult((currentYear, holidays) 
                 => holidays.GetCountryWithMostHolidays(currentYear));
 
-            return new CountryMostHolidaysResponse(country.CountryCode, country.HolidaysCount);
+            return Task.FromResult(new CountryMostHolidaysResponse(country.CountryCode, country.HolidaysCount));
         }
 
-        public MonthsOfTheYear GetMonthMostHolidaysThisYear()
+        public Task<MonthWithMostHolidaysResponse> GetMonthWithMostHolidaysThisYear()
         {
-            return GetResult((currentYear, holidays) 
+            var month = GetResult((currentYear, holidays) 
                 => holidays.GetMonthsMostHolidays(currentYear));
+
+            return Task.FromResult(new MonthWithMostHolidaysResponse(month.Month, month.HolidaysCount));
         }
 
-        public string GetCountryMostUniqueHolidaysThisYear()
+        public Task<CountryWithMostUniqueHolidaysResponse> GetCountryWithMostUniqueHolidaysThisYear()
         {
-            return GetResult((currentYear, holidays) 
+            var country = GetResult((currentYear, holidays) 
                 => holidays.GetCountryMostUniqueHolidays(currentYear));
+
+            return Task.FromResult(new CountryWithMostUniqueHolidaysResponse(country.CountryCode, country.HolidaysCount));
         }
 
         private TResponse GetResult<TResponse>(Func<int, Holidays, TResponse> getDataFunc)

@@ -1,4 +1,5 @@
-﻿using HolidayOptimizer.Api.Infrastructure.Clients;
+﻿using HolidayOptimizer.Api.Infrastructure.Caching;
+using HolidayOptimizer.Api.Infrastructure.Clients;
 using HolidayOptimizer.Api.Infrastructure.Interfaces;
 using HolidayOptimizer.Api.Services;
 using HolidayOptimizer.Api.Services.Interfaces;
@@ -14,7 +15,13 @@ namespace HolidayOptimizer.Api.Modules
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.AddHostedService<PublicHolidaysLoaderService>();
+            services.AddHostedService((ctx) 
+                => new PublicHolidaysLoaderService(
+                    ctx.GetService<IPublicHolidayClient>(),
+                    configuration.GetSection("SupportedCountryCodes").Get<string[]>(),
+                    ctx.GetService<ICacheService>()));
+
+            services.AddSingleton<ICacheService, MemoryCacheWrapper>();
             services.AddSingleton<IHolidayService, HolidayService>();
             services.AddSingleton<IPublicHolidayClient>((ctx) 
                 => new PublicHolidayApiClient(

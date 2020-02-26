@@ -37,7 +37,8 @@ namespace HolidayOptimizer.Api.Infrastructure.Clients
 
             if (!result.IsSuccessStatusCode)
             {
-                //Todo: Do something
+                //Todo: handle this situation
+                return new List<Holiday>();
             }
 
             var jsonContent = await result.Content.ReadAsStringAsync();

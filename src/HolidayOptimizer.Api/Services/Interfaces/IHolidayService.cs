@@ -1,14 +1,16 @@
 ﻿using HolidayOptimizer.Api.Contracts;
-using HolidayOptimizer.Api.Domain.Enums;
+using System.Threading.Tasks;
 
 namespace HolidayOptimizer.Api.Services.Interfaces
 {
     public interface IHolidayService
     {
-        CountryMostHolidaysResponse GetCountryWithMostHolidaysThisYear();
+        Task<HolidaysPerYearAndCountryResponse> GetHolidaysPerYearAndCountry(HolidaysPerYearAndCountryRequest request);
 
-        MonthsOfTheYear GetMonthMostHolidaysThisYear();
+        Task<CountryMostHolidaysResponse> GetCountryWithMostHolidaysThisYear();
 
-        string GetCountryMostUniqueHolidaysThisYear();
+        Task<MonthWithMostHolidaysResponse> GetMonthWithMostHolidaysThisYear();
+
+        Task<CountryWithMostUniqueHolidaysResponse> GetCountryWithMostUniqueHolidaysThisYear();        
     }
 }
