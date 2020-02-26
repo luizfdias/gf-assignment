@@ -43,6 +43,8 @@ namespace HolidayOptimizer.Api.Infrastructure.Clients
 
             var jsonContent = await result.Content.ReadAsStringAsync();
 
+            // Usually I have a specific model for the contract of third party apis
+            // but for the assignment I kept simple, since my model is similar to the third party api.
             return _serializer.Deserialize<IEnumerable<Holiday>>(jsonContent);
         }
     }
