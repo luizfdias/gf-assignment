@@ -37,7 +37,7 @@ namespace HolidayOptimizer.Api.Controllers
         {
             var result = await _holidayService.GetBiggestHolidaysSequenceThisYear();
 
-            return Ok(result.HolidayHistories);
+            return Ok(result);
         }
 
         [HttpGet("CountryMostHolidays")]        

@@ -30,12 +30,12 @@ namespace HolidayOptimizer.Api.Tests.IntegrationTests
 
             var jsonContent = await response.Content.ReadAsStringAsync();
 
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<IEnumerable<HolidayHistoryResponse>>>(jsonContent);
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<BiggestHolidaysSequenceResponse>>(jsonContent);
 
-            apiResponse.Data.Should().HaveCount(2);
+            apiResponse.Data.HolidayPlan.Should().HaveCount(2);
 
-            apiResponse.Data.FirstOrDefault().Holiday.CountryCode.Should().Be("NL");
-            apiResponse.Data.Skip(1).FirstOrDefault().Holiday.CountryCode.Should().Be("BR");
+            apiResponse.Data.HolidayPlan.FirstOrDefault().Holiday.CountryCode.Should().Be("NL");
+            apiResponse.Data.HolidayPlan.Skip(1).FirstOrDefault().Holiday.CountryCode.Should().Be("BR");
         }
 
         [Fact]

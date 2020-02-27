@@ -41,7 +41,7 @@ namespace HolidayOptimizer.Api.Services
                 => _holidaysSequenceService.GetHolidaysSequence(holidays));
 
             var response = new BiggestHolidaysSequenceResponse(
-                holidayHistories.GetBiggestHolidaySequence().Select(x => new HolidayHistoryResponse
+                holidayHistories.GetBiggestHolidaySequence().Select(x => new HolidayPlanResponse
                 {
                     StartDateUtc = x.StartDateUtc,
                     EndDateUtc = x.EndDateUtc,

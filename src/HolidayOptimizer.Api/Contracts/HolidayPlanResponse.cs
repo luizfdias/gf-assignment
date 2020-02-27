@@ -2,7 +2,7 @@
 
 namespace HolidayOptimizer.Api.Contracts
 {
-    public class HolidayHistoryResponse
+    public class HolidayPlanResponse
     {
         public DateTime StartDateUtc { get; set; }
 
