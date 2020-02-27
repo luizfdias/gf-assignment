@@ -7,6 +7,8 @@ namespace HolidayOptimizer.Api.Services.Interfaces
     {
         Task<HolidaysPerYearAndCountryResponse> GetHolidaysPerYearAndCountry(HolidaysPerYearAndCountryRequest request);
 
+        Task<BiggestHolidaysSequenceResponse> GetBiggestHolidaysSequenceThisYear();
+
         Task<CountryMostHolidaysResponse> GetCountryWithMostHolidaysThisYear();
 
         Task<MonthWithMostHolidaysResponse> GetMonthWithMostHolidaysThisYear();

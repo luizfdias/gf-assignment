@@ -1,5 +1,7 @@
 ﻿using HolidayOptimizer.Api.Domain;
+using HolidayOptimizer.Api.Domain.Models;
 using HolidayOptimizer.Api.Services;
+using HolidayOptimizer.Api.Services.ExternalContracts;
 using HolidayOptimizer.Api.Services.Interfaces;
 using NSubstitute;
 using System;
@@ -13,25 +15,56 @@ namespace HolidayOptimizer.Api.Tests.UnitTests.Services
     public class PublicHolidaysLoaderServiceTests
     {
         private readonly PublicHolidaysLoaderService _sut;
-        private readonly IPublicHolidayClient _publicHolidayClient;
+        private readonly IHttpClientWrapper _httpClient;
         private readonly string[] _supportedCountries;
         private readonly ICacheService _cacheService;
 
         public PublicHolidaysLoaderServiceTests()
         {
-            _publicHolidayClient = Substitute.For<IPublicHolidayClient>();
+            _httpClient = Substitute.For<IHttpClientWrapper>();
 
-            _publicHolidayClient.GetHolidays(DateTime.UtcNow.Year, "BR").Returns(new List<Holiday> { new Holiday { CountryCode = "BR", Date = DateTime.Parse("2020-12-25"), Name = "Christmas" } });
-            _publicHolidayClient.GetHolidays(DateTime.UtcNow.Year, "NL").Returns(new List<Holiday> { new Holiday { CountryCode = "NL", Date = DateTime.Parse("2020-12-25"), Name = "Christmas" } });
-            _publicHolidayClient.GetHolidays(DateTime.UtcNow.Year, "AT").Returns(new List<Holiday> { new Holiday { CountryCode = "AT", Date = DateTime.Parse("2020-12-25"), Name = "Christmas" } });
+            _httpClient.GetAsync<IEnumerable<HolidayInfo>>($"https://date.nager.at/api/v2/PublicHolidays/{DateTime.UtcNow.Year}/BR")
+                .Returns(new List<HolidayInfo> { new HolidayInfo { Date = DateTime.Parse("2020-12-25"), Name = "Christmas", CountryCode = "BR" } });
+
+            _httpClient.GetAsync<IEnumerable<HolidayInfo>>($"https://date.nager.at/api/v2/PublicHolidays/{DateTime.UtcNow.Year}/NL")
+                .Returns(new List<HolidayInfo> { new HolidayInfo { Date = DateTime.Parse("2020-12-25"), Name = "Christmas", CountryCode = "NL" } });
+
+            _httpClient.GetAsync<IEnumerable<HolidayInfo>>($"https://date.nager.at/api/v2/PublicHolidays/{DateTime.UtcNow.Year}/AT")
+                .Returns(new List<HolidayInfo> { new HolidayInfo { Date = DateTime.Parse("2020-12-25"), Name = "Christmas", CountryCode = "AT" } });
+
+            var countryBR = new CountryInfo
+            {                
+                Timezones = new string[] { "UTC-02:00" }
+            };
+
+            var countryNL = new CountryInfo
+            {               
+                Timezones = new string[] { "UTC+01:00" }
+            };
+
+            var countryAT = new CountryInfo
+            {                
+                Timezones = new string[] { "UTC+01:00" }
+            };
+
+            _httpClient.GetAsync<CountryInfo>($"https://restcountries.eu/rest/v2/alpha/BR")
+                .Returns(countryBR);
+
+            _httpClient.GetAsync<CountryInfo>($"https://restcountries.eu/rest/v2/alpha/NL")
+                .Returns(countryNL);
+
+            _httpClient.GetAsync<CountryInfo>($"https://restcountries.eu/rest/v2/alpha/AT")
+                .Returns(countryAT);
 
             _cacheService = Substitute.For<ICacheService>();
             _supportedCountries = new string[] { "BR", "NL", "AT", "AB" };
 
             _sut = new PublicHolidaysLoaderService(
-                _publicHolidayClient,
+                _httpClient,
                 _supportedCountries,
-                _cacheService);
+                _cacheService,
+                "https://date.nager.at/api/v2/PublicHolidays/",
+                "https://restcountries.eu/rest/v2/alpha/");
         }
 
         [Fact]

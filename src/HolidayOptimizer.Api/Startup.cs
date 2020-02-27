@@ -21,6 +21,7 @@ namespace HolidayOptimizer.Api
             services                
                 .AddApiModule()
                 .AddServicesModule(Configuration)
+                .AddDomainModule()
                 .AddInfrastructureModule();
         }
 

@@ -3,17 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HolidayOptimizer.Api.Domain
+namespace HolidayOptimizer.Api.Domain.Models
 {
     public class Holidays : List<Holiday>
-    {
+    {        
         public Holidays GetHolidaysPerYearAndCountry(int year, string countryCode)
         {
             var holidays = new Holidays();
 
             var holidayList = this.Where(x
                 => x.Date.Year == year
-                && x.CountryCode.Equals(countryCode, StringComparison.InvariantCultureIgnoreCase));
+                && x.Country.CountryCode.Equals(countryCode, StringComparison.InvariantCultureIgnoreCase));
 
             holidays.AddRange(holidayList);
 
@@ -29,7 +29,7 @@ namespace HolidayOptimizer.Api.Domain
                 return (string.Empty, 0);
             }
 
-            var countriesGroup = holidaysOfTheYear.GroupBy(x => x.CountryCode);
+            var countriesGroup = holidaysOfTheYear.GroupBy(x => x.Country.CountryCode);
 
             var country = countriesGroup.OrderByDescending(x => x.Count()).First();
 
@@ -56,7 +56,6 @@ namespace HolidayOptimizer.Api.Domain
 
         public (string CountryCode, int HolidaysCount) GetCountryMostUniqueHolidays(int year)
         {
-            // There is probably a better way to do this, but I chose to not invest the time making the algorithm better
             var holidaysOfTheYear = this.Where(x => x.Date.Year == year);
 
             if (!holidaysOfTheYear.Any())
@@ -68,10 +67,10 @@ namespace HolidayOptimizer.Api.Domain
                 .GroupBy(x => x.Name)
                 .Where(x => x.Count() == 1)
                 .Select(x => new Holiday { Name = x.Key });
-            
+
             var countriesWithUniqueHolidays = this.Intersect(holidayUniquesGroup, new HolidayNameComparer());
 
-            var countriesGroup = countriesWithUniqueHolidays.GroupBy(x => x.CountryCode);
+            var countriesGroup = countriesWithUniqueHolidays.GroupBy(x => x.Country.CountryCode);
 
             var country = countriesGroup.OrderByDescending(x => x.Count()).First();
 

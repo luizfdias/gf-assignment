@@ -1,4 +1,5 @@
-﻿using HolidayOptimizer.Api.Infrastructure.Caching;
+﻿using HolidayOptimizer.Api.Domain.Interfaces;
+using HolidayOptimizer.Api.Infrastructure.Caching;
 using HolidayOptimizer.Api.Infrastructure.Clients;
 using HolidayOptimizer.Api.Infrastructure.Interfaces;
 using HolidayOptimizer.Api.Services;
@@ -17,15 +18,22 @@ namespace HolidayOptimizer.Api.Modules
         {
             services.AddHostedService((ctx) 
                 => new PublicHolidaysLoaderService(
-                    ctx.GetService<IPublicHolidayClient>(),
+                    ctx.GetService<IHttpClientWrapper>(),
                     configuration.GetSection("SupportedCountryCodes").Get<string[]>(),
-                    ctx.GetService<ICacheService>()));
+                    ctx.GetService<ICacheService>(),
+                    configuration["PublicHolidayApiBaseUrl"],
+                    configuration["CountryInfoApiBaseUrl"]));
 
             services.AddSingleton<ICacheService, MemoryCacheWrapper>();
-            services.AddSingleton<IHolidayService, HolidayService>();
-            services.AddSingleton<IPublicHolidayClient>((ctx) 
-                => new PublicHolidayApiClient(
-                    configuration["PublicHolidayApiBaseUrl"],
+            services.AddSingleton<IHolidayService>((ctx) 
+                => new HolidayService(
+                    ctx.GetService<ICacheService>(),
+                    ctx.GetService<IHttpClientWrapper>(),
+                    ctx.GetService<IHolidaysSequenceService>(),
+                    configuration["PublicHolidayApiBaseUrl"]));
+
+            services.AddSingleton<IHttpClientWrapper>((ctx) 
+                => new HttpClientWrapper(                    
                     ctx.GetService<HttpClient>(),
                     ctx.GetService<ISerialization>()));
 

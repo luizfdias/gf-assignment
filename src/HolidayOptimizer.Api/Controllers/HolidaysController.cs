@@ -21,9 +21,23 @@ namespace HolidayOptimizer.Api.Controllers
         [HttpGet("{Year}/{Country}")]
         public async Task<IActionResult> GetHolidaysPerYearAndCountry([FromRoute]HolidaysPerYearAndCountryRequest request)
         {
-            var holidaysResult = await _holidayService.GetHolidaysPerYearAndCountry(request);
+            var result = await _holidayService.GetHolidaysPerYearAndCountry(request);
 
-            return Ok(holidaysResult.Holidays);
+            return Ok(result.Holidays);
+        }
+
+        /// <summary>
+        /// My assumption for this method was to find the biggest sequence of holidays in a year, considering that you are going
+        /// to stay the max amount of time in each country you visit.
+        /// The idea is avoid to spend too much of your super speed power, traveling less and enjoying your holidays more! =D
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("BiggestHolidaysSequence")]
+        public async Task<IActionResult> GetBiggestHolidaysSequence()
+        {
+            var result = await _holidayService.GetBiggestHolidaysSequenceThisYear();
+
+            return Ok(result.HolidayHistories);
         }
 
         [HttpGet("CountryMostHolidays")]        

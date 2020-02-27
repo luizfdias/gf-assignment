@@ -1,4 +1,5 @@
-﻿using HolidayOptimizer.Api.Domain;
+﻿using HolidayOptimizer.Api.Domain.Models;
+using HolidayOptimizer.Api.Services;
 using HolidayOptimizer.Api.Services.Interfaces;
 using HolidayOptimizer.Api.Tests.Helpers;
 using HolidayOptimizer.Api.Tests.IntegrationTests.HttpMessageHandlers;
@@ -6,9 +7,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 
@@ -34,7 +37,7 @@ namespace HolidayOptimizer.Api.Tests.IntegrationTests.Helpers
                 .ConfigureTestServices(services =>
                 {
                     services.AddSingleton<ICacheService>(cacheService);
-                    services.AddSingleton<HttpClient>(new HttpClient(new GetHolidaysHttpMessageHandler()));
+                    services.AddSingleton<HttpClient>(new HttpClient(new GetHolidaysHttpMessageHandler()));                    
                 })
                 .UseStartup<Startup>();
 

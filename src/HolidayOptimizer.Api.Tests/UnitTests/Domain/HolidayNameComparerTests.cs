@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using HolidayOptimizer.Api.Domain;
+using HolidayOptimizer.Api.Domain.Models;
 using HolidayOptimizer.Api.Tests.AutoData;
 using Xunit;
 

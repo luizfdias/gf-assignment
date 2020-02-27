@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace HolidayOptimizer.Api.Domain
+namespace HolidayOptimizer.Api.Services.ExternalContracts
 {
-    public class Holiday 
+    public class HolidayInfo
     {
         public DateTime Date { get; set; }
 

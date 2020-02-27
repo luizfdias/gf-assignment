@@ -1,5 +1,7 @@
 ﻿using HolidayOptimizer.Api.Contracts;
-using HolidayOptimizer.Api.Domain;
+using HolidayOptimizer.Api.Domain.Interfaces;
+using HolidayOptimizer.Api.Domain.Models;
+using HolidayOptimizer.Api.Services.ExternalContracts;
 using HolidayOptimizer.Api.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,34 +13,67 @@ namespace HolidayOptimizer.Api.Services
     public class HolidayService : IHolidayService
     {
         private readonly ICacheService _cache;
-        private readonly IPublicHolidayClient _holidayClient;
+        private readonly IHttpClientWrapper _httpClient;
+        private readonly IHolidaysSequenceService _holidaysSequenceService;
+        private readonly string _holidayApiBaseUrl;
 
         public HolidayService(
             ICacheService cache,
-            IPublicHolidayClient holidayClient)
+            IHttpClientWrapper httpClient,
+            IHolidaysSequenceService holidaysSequenceService,
+            string holidayApiBaseUrl)
         {
+            if (string.IsNullOrWhiteSpace(holidayApiBaseUrl))
+            {
+                throw new ArgumentNullException(nameof(holidayApiBaseUrl));
+            }
+
+            _holidayApiBaseUrl = holidayApiBaseUrl;
+
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-            _holidayClient = holidayClient ?? throw new ArgumentNullException(nameof(holidayClient));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _holidaysSequenceService = holidaysSequenceService ?? throw new ArgumentNullException(nameof(holidaysSequenceService));
+        }
+
+        public Task<BiggestHolidaysSequenceResponse> GetBiggestHolidaysSequenceThisYear()
+        {
+            var holidayHistories = GetResult((currentYear, holidays)
+                => _holidaysSequenceService.GetHolidaysSequence(holidays));
+
+            var response = new BiggestHolidaysSequenceResponse(
+                holidayHistories.GetBiggestHolidaySequence().Select(x => new HolidayHistoryResponse
+                {
+                    StartDateUtc = x.StartDateUtc,
+                    EndDateUtc = x.EndDateUtc,
+                    LocalTimeArrival = x.StartDate,
+                    LocalTimeEnd = x.EndDate,
+                    Holiday = new HolidayResponse(x.Holiday.Date, x.Holiday.Name, x.Holiday.Country.CountryCode)
+                }));
+
+            return Task.FromResult(response);
         }
 
         public async Task<HolidaysPerYearAndCountryResponse> GetHolidaysPerYearAndCountry(HolidaysPerYearAndCountryRequest request)
-        {
-            IEnumerable<Holiday> holidayResult;            
-
-            var allHolidays = _cache.Get<Holidays>($"holidays_{request.Year}");
+        {            
+            var allHolidays = _cache.Get<Holidays>($"holidays_{request.Year}");            
 
             if (allHolidays != null && allHolidays.Any())
             {
-                holidayResult = allHolidays.GetHolidaysPerYearAndCountry(request.Year, request.Country);                
+                var holidays = allHolidays.GetHolidaysPerYearAndCountry(request.Year, request.Country);
+
+                return new HolidaysPerYearAndCountryResponse(
+                    holidays.Select(x => new HolidayResponse(x.Date, x.Name, x.Country.CountryCode)));
             }
             else
             {
-                holidayResult = await _holidayClient.GetHolidays(request.Year, request.Country);
-            }            
+                var requestUrl = _holidayApiBaseUrl + $"{request.Year}/{request.Country}";
 
-            return new HolidaysPerYearAndCountryResponse(
-                    holidayResult.Select(x => new HolidayResponse(x.Date, x.Name, x.CountryCode)));
-        }
+                var holidaysInfo = await _httpClient.GetAsync<IEnumerable<HolidayInfo>>(requestUrl);
+
+                return new HolidaysPerYearAndCountryResponse(
+                    holidaysInfo.Select(x => new HolidayResponse(x.Date, x.Name, x.CountryCode)));
+            }                        
+        }        
 
         public Task<CountryMostHolidaysResponse> GetCountryWithMostHolidaysThisYear()
         {
@@ -71,6 +106,6 @@ namespace HolidayOptimizer.Api.Services
             var holidays = _cache.Get<Holidays>($"holidays_{currentYear}");
 
             return getDataFunc(currentYear, holidays);
-        }
+        }        
     }
 }

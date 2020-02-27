@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using Xunit;
 
@@ -21,6 +22,23 @@ namespace HolidayOptimizer.Api.Tests.IntegrationTests
         }
 
         [Fact]
+        public async void GetBiggestHolidaysSequence_ShouldReturnBiggestSequenceAsExpected()
+        {
+            var response = await _client.GetAsync($"api/v1/holidays/BiggestHolidaysSequence");
+
+            response.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+            var jsonContent = await response.Content.ReadAsStringAsync();
+
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<IEnumerable<HolidayHistoryResponse>>>(jsonContent);
+
+            apiResponse.Data.Should().HaveCount(2);
+
+            apiResponse.Data.FirstOrDefault().Holiday.CountryCode.Should().Be("NL");
+            apiResponse.Data.Skip(1).FirstOrDefault().Holiday.CountryCode.Should().Be("BR");
+        }
+
+        [Fact]
         public async void GetHolidaysPerYearAndCountry_GivenTheCurrentYear_ShouldReturnHolidaysFromCache()
         {
             var response = await _client.GetAsync($"api/v1/holidays/{DateTime.UtcNow.Year}/NL");
@@ -31,7 +49,7 @@ namespace HolidayOptimizer.Api.Tests.IntegrationTests
 
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse<IEnumerable<HolidayResponse>>>(jsonContent);
 
-            apiResponse.Data.Should().HaveCount(3);
+            apiResponse.Data.Should().HaveCount(4);
         }
 
         [Fact]
@@ -60,7 +78,7 @@ namespace HolidayOptimizer.Api.Tests.IntegrationTests
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CountryMostHolidaysResponse>>(jsonContent);
 
             apiResponse.Data.CountryCode.Should().Be("NL");
-            apiResponse.Data.HolidaysCount.Should().Be(3);
+            apiResponse.Data.HolidaysCount.Should().Be(4);
         }
 
         [Fact]
@@ -91,6 +109,6 @@ namespace HolidayOptimizer.Api.Tests.IntegrationTests
 
             apiResponse.Data.CountryCode.Should().Be("NL");
             apiResponse.Data.HolidaysCount.Should().Be(2);
-        }
+        }        
     }
 }

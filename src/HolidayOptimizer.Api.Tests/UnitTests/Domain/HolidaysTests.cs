@@ -14,7 +14,7 @@ namespace HolidayOptimizer.Api.Tests.UnitTests
 
             var holidaysResult = allHolidays.GetHolidaysPerYearAndCountry(2020, "NL");
 
-            holidaysResult.Should().HaveCount(3);
+            holidaysResult.Should().HaveCount(4);
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace HolidayOptimizer.Api.Tests.UnitTests
             var country = holidays.GetCountryWithMostHolidays(2020);
 
             country.CountryCode.Should().Be("NL");
-            country.HolidaysCount.Should().Be(3);
+            country.HolidaysCount.Should().Be(4);
         }
 
         [Fact]
